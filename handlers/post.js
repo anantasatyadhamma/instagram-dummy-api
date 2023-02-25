@@ -1,0 +1,162 @@
+const { db, messaging } = require("../firebase");
+const {formatDistanceToNow} = require('date-fns');
+
+exports.likedPost = (req, res) => {
+    const postId = req.body.postId;
+    const data = {
+        user_has_liked: true,
+    };
+
+    let username;
+
+    db.ref(`posts/${postId}/user/username`).once("value")
+        .then(username => {
+            username = username.val();
+        })
+        .catch(error => {
+            return res.status(500).json({ message: "failed!", error: error });
+        })
+    db.ref(`posts/${postId}`)
+        .update(data)
+        .then(async () => {
+            await db.ref(`posts/${postId}/likes`).transaction(currentLikes => {
+                if (currentLikes === null) return 0;
+                return currentLikes + 1;
+            });
+
+            const payload = {
+                token: req.body.token,
+                notification: {
+                    title: "InstagramDummy",
+                    body: "You just liked a post from " + username 
+                }
+            }
+
+            messaging.send(payload)
+            return res.status(500).json({ message: "success!" });
+        })
+        .catch(error => {
+            return res.status(500).json({ message: "failed!", error: error });
+        });
+};
+
+exports.disLikedPost = (req, res) => {
+    const postId = req.body.postId;
+    const data = {
+        user_has_liked: false,
+    };
+    db.ref(`posts/${postId}`)
+        .update(data)
+        .then(async () => {
+            await db.ref(`posts/${postId}/likes`).transaction(currentLikes => {
+                if (currentLikes === null) return 0;
+                return currentLikes - 1;
+            });
+            return res.status(500).json({ message: "success!" });
+        })
+        .catch(error => {
+            return res.status(500).json({ message: "failed!", error: error });
+        });
+};
+
+exports.addComments = (req, res) => {
+    const postId = req.body.postId;
+    const commentId = Math.floor(Math.random() * (1000 - 1) + 1);
+    const comment = {
+        created_time: new Date().getTime(),
+        text: req.body.textComment,
+        from: {
+            username: "anan",
+            profile_picture: `https://randomuser.me/api/portraits/men/1.jpg`,
+            id: Math.floor(Math.random() * (1000 - 1) + 1),
+            full_name: "Ananta",
+        },
+        id: commentId,
+    };
+
+    db.ref(`posts/${postId}/comments/${commentId}`)
+        .set(comment)
+        .then(() => {
+            return res.status(200).json({ message: "success!" });
+        })
+        .catch(error => {
+            return res.status(500).json({ message: "failed!", error: error });
+        });
+};
+
+exports.bookmarkedPost = (req, res) => {
+    const postId = req.body.postId;
+    const data = {
+        bookmarked: true,
+    };
+    db.ref(`posts/${postId}`)
+        .update(data)
+        .then(async () => {
+            return res.status(500).json({ message: "success!" });
+        })
+        .catch(error => {
+            return res.status(500).json({ message: "failed!", error: error });
+        });
+};
+
+exports.disBookmarkedPost = (req, res) => {
+    const postId = req.body.postId;
+    const data = {
+        bookmarked: false,
+    };
+    db.ref(`posts/${postId}`)
+        .update(data)
+        .then(async () => {
+            return res.status(500).json({ message: "success!" });
+        })
+        .catch(error => {
+            return res.status(500).json({ message: "failed!", error: error });
+        });
+};
+
+exports.searchPost = (req, res) => {
+    const username = req.body.username;
+    db.ref("posts")
+        .once("value")
+        .then(snapshot => {
+            let data = [];
+            const promises = new Promise((resolve, reject) => {
+                snapshot.forEach(element => {
+                    if (element.child("user").child("username").val() === username) {
+                        const post = {
+                            username: element.child("user").child("username").val(),
+                            userProfile: element.child("user").child("profile_picture").val(),
+                            bookmarked: element.child("bookmarked").val(),
+                            likes: element.child("likes").val(),
+                            user_has_liked: element.child("user_has_liked").val(),
+                            image: element.child("images").child("standard_resolution").child("url").val(),
+                            caption: element.child("caption").child("text").val(),
+                            comments: element.child("comments").val(),
+                            time: formatDistanceToNow(parseInt(element.child("created_time").val()))
+                        }
+                        data.push(post);
+                        resolve(data);
+                    } else {
+                        resolve(data);
+                    }
+                });
+            });
+
+            promises.then(result => {
+                if(result.length > 0) {
+                    return res.status(200).json({ message: "success!", data: result });
+                } else {
+                    return res.status(200).json({ message: "no data!" });
+                }
+                
+            })
+            .catch(error => {
+                console.log('error promise', error);
+                return res.status(500).json({ message: "failed!", error: error });
+            })
+            
+        })
+        .catch(error => {
+            return res.status(500).json({ message: "failed!", error: error });
+        });
+};
