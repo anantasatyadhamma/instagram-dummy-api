@@ -19,11 +19,24 @@ exports.addUser = (req, res) => {
 }
 
 exports.getUserProfile = (req, res) => {
-    db.ref(`users/${req.body.userId}`).once('value')
+    db.ref(`users/84`).once('value')
         .then(data => {
             return res.status(200).json({ message: 'success!', data: data.val() });
         })
         .catch(error => {
-            return res.status(500),json({ message: 'failed!', error: error });
+            return res.status(500).json({ message: 'failed!', error: error });
+        })
+}
+
+exports.addTokenFCM = (req, res) => {
+    const data = {
+        tokenFCM : req.body.tokenFCM
+    }
+    db.ref(`users/84`).update(data)
+        .then(() => {
+            return res.status(200).json({ message: 'success!' });
+        })
+        .catch(error => {
+            return res.status(500).json({ message: "failed!", error });
         })
 }

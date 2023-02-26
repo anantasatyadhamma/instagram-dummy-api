@@ -1,5 +1,5 @@
 const { db, messaging } = require("../firebase");
-const {formatDistanceToNow} = require('date-fns');
+const { formatDistanceToNow } = require("date-fns");
 
 exports.likedPost = (req, res) => {
     const postId = req.body.postId;
@@ -7,16 +7,32 @@ exports.likedPost = (req, res) => {
         user_has_liked: true,
     };
 
-    let username;
+    let username, tokenFCM;
 
-    db.ref(`posts/${postId}/user/username`).once("value")
-        .then(username => {
-            username = username.val();
-        })
-        .catch(error => {
-            return res.status(500).json({ message: "failed!", error: error });
-        })
-    db.ref(`posts/${postId}`)
+    const promises = new Promise(async (resolve, reject) => {
+        await db.ref(`posts/${postId}/user/username`)
+            .once("value")
+            .then(username => {
+                username = username.val();
+            })
+            .catch(error => {
+                return res.status(500).json({ message: "failed!", error: error });
+            });
+
+        await db.ref(`users/84/tokenFCM`)
+            .once("value")
+            .then(token => {
+                tokenFCM = token.val();
+            })
+            .catch(error => {
+                return res.status(500).json({ message: "failed!", error: error });
+            });
+
+        resolve('success!');
+    });
+
+    promises.then(() => {
+        db.ref(`posts/${postId}`)
         .update(data)
         .then(async () => {
             await db.ref(`posts/${postId}/likes`).transaction(currentLikes => {
@@ -25,19 +41,20 @@ exports.likedPost = (req, res) => {
             });
 
             const payload = {
-                token: req.body.token,
+                token: tokenFCM,
                 notification: {
                     title: "InstagramDummy",
-                    body: "You just liked a post from " + username 
-                }
-            }
+                    body: "You just liked a post from " + username,
+                },
+            };
 
-            messaging.send(payload)
+            messaging.send(payload);
             return res.status(500).json({ message: "success!" });
         })
         .catch(error => {
             return res.status(500).json({ message: "failed!", error: error });
         });
+    });
 };
 
 exports.disLikedPost = (req, res) => {
@@ -62,26 +79,49 @@ exports.disLikedPost = (req, res) => {
 exports.addComments = (req, res) => {
     const postId = req.body.postId;
     const commentId = Math.floor(Math.random() * (1000 - 1) + 1);
-    const comment = {
+
+    let comment = {
         created_time: new Date().getTime(),
         text: req.body.textComment,
         from: {
-            username: "anan",
             profile_picture: `https://randomuser.me/api/portraits/men/1.jpg`,
             id: Math.floor(Math.random() * (1000 - 1) + 1),
-            full_name: "Ananta",
         },
         id: commentId,
     };
 
-    db.ref(`posts/${postId}/comments/${commentId}`)
-        .set(comment)
-        .then(() => {
-            return res.status(200).json({ message: "success!" });
-        })
-        .catch(error => {
-            return res.status(500).json({ message: "failed!", error: error });
-        });
+    const promises = new Promise(async (resolve, reject) => {
+        await db
+            .ref(`users/84`)
+            .once("value")
+            .then(data => {
+                comment = {
+                    ...comment,
+                    from: {
+                        ...comment.from,
+                        username: data.child("username").val(),
+                        full_name: data.child("name").val(),
+                    },
+                };
+
+                resolve("success!");
+            })
+            .catch(error => {
+                console.log("err", error);
+                return res.status(500).json({ message: "failed!", error: error });
+            });
+    });
+
+    promises.then(() => {
+        db.ref(`posts/${postId}/comments/${commentId}`)
+            .set(comment)
+            .then(() => {
+                return res.status(200).json({ message: "success!" });
+            })
+            .catch(error => {
+                return res.status(500).json({ message: "failed!", error: error });
+            });
+    });
 };
 
 exports.bookmarkedPost = (req, res) => {
@@ -132,8 +172,8 @@ exports.searchPost = (req, res) => {
                             image: element.child("images").child("standard_resolution").child("url").val(),
                             caption: element.child("caption").child("text").val(),
                             comments: element.child("comments").val(),
-                            time: formatDistanceToNow(parseInt(element.child("created_time").val()))
-                        }
+                            time: formatDistanceToNow(parseInt(element.child("created_time").val())),
+                        };
                         data.push(post);
                         resolve(data);
                     } else {
@@ -142,19 +182,18 @@ exports.searchPost = (req, res) => {
                 });
             });
 
-            promises.then(result => {
-                if(result.length > 0) {
-                    return res.status(200).json({ message: "success!", data: result });
-                } else {
-                    return res.status(200).json({ message: "no data!" });
-                }
-                
-            })
-            .catch(error => {
-                console.log('error promise', error);
-                return res.status(500).json({ message: "failed!", error: error });
-            })
-            
+            promises
+                .then(result => {
+                    if (result.length > 0) {
+                        return res.status(200).json({ message: "success!", data: result });
+                    } else {
+                        return res.status(200).json({ message: "no data!" });
+                    }
+                })
+                .catch(error => {
+                    console.log("error promise", error);
+                    return res.status(500).json({ message: "failed!", error: error });
+                });
         })
         .catch(error => {
             return res.status(500).json({ message: "failed!", error: error });
@@ -163,11 +202,12 @@ exports.searchPost = (req, res) => {
 
 exports.getDetailPost = (req, res) => {
     const postId = req.body.postId;
-    db.ref(`posts/${postId}`).once("value")
+    db.ref(`posts/${postId}`)
+        .once("value")
         .then(snapshot => {
-            return res.status(200).json({ message: 'success!', data: snapshot.val() });
+            return res.status(200).json({ message: "success!", data: snapshot.val() });
         })
         .catch(error => {
-            return res.status(500).json({ message: 'failed!', error });
-        })
-}
+            return res.status(500).json({ message: "failed!", error });
+        });
+};

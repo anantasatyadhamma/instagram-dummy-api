@@ -14,7 +14,7 @@ app.use(bodyParser.json());
 const {getPosts, addPosts, addStories, getSories} = require("./handlers/home.js");
 const {likedPost, disLikedPost, addComments, bookmarkedPost, disBookmarkedPost, searchPost, getDetailPost} = require("./handlers/post");
 const {getNotification} = require("./handlers/notification");
-const {addUser, getUserProfile} = require('./handlers/user');
+const {addUser, getUserProfile, addTokenFCM} = require('./handlers/user');
 
 
 app.get('/get-posts', getPosts);
@@ -31,6 +31,7 @@ app.post('/get-notification', getNotification);
 app.post('/add-user', addUser);
 app.post('/get-user-profile', getUserProfile);
 app.post('/search', searchPost);
+app.post("/add-token-fcm", addTokenFCM);
 
 
 app.listen(port, () => console.log(`Hello world app listening on port ${port}!`))
