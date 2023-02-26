@@ -27,7 +27,7 @@ app.post('/unlike-post', disLikedPost);
 app.post('/add-comment', addComments);
 app.post('/bookmark-post', bookmarkedPost);
 app.post('/disBookmark-post', disBookmarkedPost);
-app.post('/get-notification', getNotification);
+app.get('/get-notification', getNotification);
 app.post('/add-user', addUser);
 app.post('/get-user-profile', getUserProfile);
 app.post('/search', searchPost);
