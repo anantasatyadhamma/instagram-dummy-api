@@ -48,9 +48,15 @@ exports.likedPost = (req, res) => {
                 },
             };
 
+            const notification = {
+                title: "Like Post",
+                text: "You just liked a post from " + username,
+                created_time: new Date().getTime(),
+            }
+
             messaging.send(payload)
                 .then( async () => {
-                    await db.ref(`notification/84`).push(payload)
+                    await db.ref(`notification/84`).push(notification)
                     return res.status(200).json({ message: "success!" });
                 })
                 .catch(error => {

@@ -1,8 +1,7 @@
 const {db} = require("../firebase");
 
 exports.getNotification = (req, res) => {
-    const userId = 84;
-    db.ref('notification').orderByChild("userId").equalTo(userId).once("value")
+    db.ref('notification/84').once("value")
         .then(snapshot => {
             return res.status(200).json({ message: 'success!', data: snapshot.val() });
         })
