@@ -29,7 +29,7 @@ app.post('/bookmark-post', bookmarkedPost);
 app.post('/disBookmark-post', disBookmarkedPost);
 app.get('/get-notification', getNotification);
 app.post('/add-user', addUser);
-app.post('/get-user-profile', getUserProfile);
+app.get('/get-user-profile', getUserProfile);
 app.post('/search', searchPost);
 app.post("/add-token-fcm", addTokenFCM);
 
