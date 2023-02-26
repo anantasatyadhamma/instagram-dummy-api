@@ -185,7 +185,7 @@ exports.searchPost = (req, res) => {
                             image: element.child("images").child("standard_resolution").child("url").val(),
                             caption: element.child("caption").child("text").val(),
                             comments: element.child("comments").val(),
-                            time: element.child("created_time").val(),
+                            created_time: element.child("created_time").val(),
                         };
                         data.push(post);
                         resolve(data);
