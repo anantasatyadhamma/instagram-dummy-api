@@ -178,7 +178,7 @@ exports.searchPost = (req, res) => {
                     if (element.child("user").child("username").val() === username) {
                         const post = {
                             username: element.child("user").child("username").val(),
-                            userProfile: element.child("user").child("profile_picture").val(),
+                            profile_picture: element.child("user").child("profile_picture").val(),
                             bookmarked: element.child("bookmarked").val(),
                             likes: element.child("likes").val(),
                             user_has_liked: element.child("user_has_liked").val(),
