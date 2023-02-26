@@ -43,13 +43,20 @@ exports.likedPost = (req, res) => {
             const payload = {
                 token: tokenFCM,
                 notification: {
-                    title: "InstagramDummy",
+                    title: "Like Post",
                     body: "You just liked a post from " + username,
                 },
             };
 
-            messaging.send(payload);
-            return res.status(200).json({ message: "success!" });
+            messaging.send(payload)
+                .then( async () => {
+                    await db.ref(`notification/84`).push(payload)
+                    return res.status(200).json({ message: "success!" });
+                })
+                .catch(error => {
+                    return res.status(500).json({ message: "failed!", error: error });
+                })
+            
         })
         .catch(error => {
             return res.status(500).json({ message: "failed!", error: error });
