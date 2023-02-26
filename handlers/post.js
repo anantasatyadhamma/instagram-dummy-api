@@ -69,7 +69,7 @@ exports.disLikedPost = (req, res) => {
                 if (currentLikes === null) return 0;
                 return currentLikes - 1;
             });
-            return res.status(500).json({ message: "success!" });
+            return res.status(200).json({ message: "success!" });
         })
         .catch(error => {
             return res.status(500).json({ message: "failed!", error: error });
@@ -132,7 +132,7 @@ exports.bookmarkedPost = (req, res) => {
     db.ref(`posts/${postId}`)
         .update(data)
         .then(async () => {
-            return res.status(500).json({ message: "success!" });
+            return res.status(200).json({ message: "success!" });
         })
         .catch(error => {
             return res.status(500).json({ message: "failed!", error: error });
@@ -147,7 +147,7 @@ exports.disBookmarkedPost = (req, res) => {
     db.ref(`posts/${postId}`)
         .update(data)
         .then(async () => {
-            return res.status(500).json({ message: "success!" });
+            return res.status(200).json({ message: "success!" });
         })
         .catch(error => {
             return res.status(500).json({ message: "failed!", error: error });
