@@ -452,3 +452,66 @@ exports.addPosts = (req, res) => {
 
     return res.status(500).json({ message: 'success!'});
 }
+
+exports.addStories = (req, res) => {
+  const stories = [
+    {
+      username: 'itsgoodman',
+      stories: `https://cdn.pixabay.com/photo/2023/01/23/09/26/cat-7738210__340.jpg`,
+      profil_picture: `https://randomuser.me/api/portraits/men/12.jpg`,
+      id: 0,
+    },
+    {
+      username: 'samofficial',
+      stories: `https://cdn.pixabay.com/photo/2023/01/27/06/17/pheasant-7747830__340.jpg`,
+      profil_picture: `https://randomuser.me/api/portraits/men/60.jpg`,
+      id: 1,
+    },
+    {
+      username: 'thisisjohn',
+      stories: `https://cdn.pixabay.com/photo/2022/11/10/20/44/switzerland-7583676__340.jpg`,
+      profil_picture: `https://randomuser.me/api/portraits/men/4.jpg`,
+      id: 2,
+    },
+    {
+      username: 'mike',
+      stories: `https://cdn.pixabay.com/photo/2022/11/16/16/56/city-7596379__340.jpg`,
+      profil_picture: `https://randomuser.me/api/portraits/men/8.jpg`,
+      id: 3,
+    },
+    {
+      username: 'tommy',
+      stories: `https://cdn.pixabay.com/photo/2023/02/04/14/22/fish-7767315__340.jpg`,
+      profil_picture: `https://randomuser.me/api/portraits/men/1.jpg`,
+      id: 4,
+    },
+    {
+      username: 'therealdavid',
+      stories: `https://cdn.pixabay.com/photo/2023/01/30/23/09/bird-7756768__340.jpg`,
+      profil_picture: `https://randomuser.me/api/portraits/men/55.jpg`,
+      id: 5,
+    },
+  ];
+
+  Promise.all(stories.map(e => {
+    db.ref("stories").push(e)
+  }));
+
+  return res.status(200).json({ message: "success!" });
+  
+}
+
+
+exports.getSories = (req, res) => {
+  db.ref("stories").once('value')
+    .then(snapshot => {
+      let stories = [];
+      snapshot.forEach(e => {
+        stories.push(e);
+      });
+      return res.status(200).json({ message: 'success!', data: stories });
+    })
+    .catch(error => {
+      return res.status(500).json({ message: "failed!", error: error });
+    })
+}
