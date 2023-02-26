@@ -12,12 +12,13 @@ app.use(bodyParser.json());
 
 // imports handlers
 const {getPosts, addPosts, addStories, getSories} = require("./handlers/home.js");
-const {likedPost, disLikedPost, addComments, bookmarkedPost, disBookmarkedPost, searchPost} = require("./handlers/post");
+const {likedPost, disLikedPost, addComments, bookmarkedPost, disBookmarkedPost, searchPost, getDetailPost} = require("./handlers/post");
 const {getNotification} = require("./handlers/notification");
 const {addUser, getUserProfile} = require('./handlers/user');
 
 
 app.get('/get-posts', getPosts);
+app.post('/get-detail-post', getDetailPost);
 app.get('/get-stories', getSories);
 app.post('/add-posts', addPosts);
 app.post('/add-stories', addStories);

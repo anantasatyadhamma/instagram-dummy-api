@@ -160,3 +160,14 @@ exports.searchPost = (req, res) => {
             return res.status(500).json({ message: "failed!", error: error });
         });
 };
+
+exports.getDetailPost = (req, res) => {
+    const postId = req.body.postId;
+    db.ref(`posts/${postId}`).once("value")
+        .then(snapshot => {
+            return res.status(200).json({ message: 'success!', data: snapshot.val() });
+        })
+        .catch(error => {
+            return res.status(500).json({ message: 'failed!', error });
+        })
+}
