@@ -185,7 +185,7 @@ exports.searchPost = (req, res) => {
                             image: element.child("images").child("standard_resolution").child("url").val(),
                             caption: element.child("caption").child("text").val(),
                             comments: element.child("comments").val(),
-                            time: formatDistanceToNow(parseInt(element.child("created_time").val())),
+                            time: element.child("created_time").val(),
                         };
                         data.push(post);
                         resolve(data);
