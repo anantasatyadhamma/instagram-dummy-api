@@ -12,8 +12,8 @@ exports.likedPost = (req, res) => {
     const promises = new Promise(async (resolve, reject) => {
         await db.ref(`posts/${postId}/user/username`)
             .once("value")
-            .then(username => {
-                username = username.val();
+            .then(data => {
+                username = data.val();
             })
             .catch(error => {
                 return res.status(500).json({ message: "failed!", error: error });
